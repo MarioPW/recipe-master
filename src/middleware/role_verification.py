@@ -1,6 +1,6 @@
 from fastapi import Request, HTTPException
 from fastapi.security import OAuth2PasswordBearer
-from src.utils.jwt import verify_token
+from src.utils.jwt_handler import verify_token
 from src.db.models import UserRole
 from src.api.components.users.repository import UserRepository
 from src.api.components.users.service import session

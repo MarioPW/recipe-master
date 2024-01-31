@@ -1,4 +1,4 @@
-from src.utils.jwt import verify_token
+from src.utils.jwt_handler import verify_token
 from src.api.components.users.repository import UserRepository
 from src.db.database import session
 

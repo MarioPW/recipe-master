@@ -13,7 +13,8 @@ try:
     Base = declarative_base()
     Session = sessionmaker(autocommit=False, autoflush=False, bind=engine)
     session = Session()
-except ValueError as e:
+except Exception as e:
     print(f'Error in database connection: {e}')
 finally:
     session.close()
+

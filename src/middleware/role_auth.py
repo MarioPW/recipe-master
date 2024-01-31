@@ -1,6 +1,6 @@
 from fastapi import Depends, HTTPException
 from fastapi.security import OAuth2PasswordBearer
-from src.utils.jwt import verify_token
+from src.utils.jwt_handler import verify_token
 from src.db.models import UserRole
 from src.api.components.users.repository import UserRepository
 from src.api.components.users.service import session
@@ -16,9 +16,22 @@ def roles_required(allowed_roles:list, token=None, code=None) -> None:
         if decoded_user:
                user = user_repository.get_user_by_id(decoded_user["user_id"])
     elif code:
-        user = user_repository.get_user_by_code(code)    
+        user = user_repository.get_user_by_confirmation_code(code)    
     if user is None or user.role not in allowed_roles:
         raise HTTPException(status_code=403, detail="Access denied")
+    
+def roles_required_ingredients(allowed_roles:list, token=None, code=None):
+    user = None
+    if token:
+        decoded_user = verify_token(token)
+        if decoded_user:
+               user = user_repository.get_user_by_id(decoded_user["user_id"])
+    elif code:
+        user = user_repository.get_user_by_confirmation_code(code)    
+    if user is None or user.role not in allowed_roles:
+        raise HTTPException(status_code=403, detail="Access denied")
+    return user
+    
 
 def role_admin_middleware(token: str = Depends(oauth2_scheme)):
     has_required_role = roles_required([UserRole.user], token)

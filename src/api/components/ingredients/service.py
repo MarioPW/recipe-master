@@ -1,5 +1,6 @@
 from fastapi import HTTPException
 from fastapi.responses import JSONResponse
+import uuid
 from src.db.database import session
 from src.db.models import User
 from src.api.components.users.repository import UserRepository
@@ -25,13 +26,15 @@ class IngredientsService(IngredientsRepository):
 
     def create_ingredient(self, ingredient_req:IngredientReq, user_id):
         user_exists: User = user_repository.get_user_by_id(user_id)
+        id = str(uuid.uuid4())
         if not user_exists:
             raise HTTPException(status_code=404, detail="User not found")       
         try:
             new_ingredient = Ingredient(
-            user_id = user_id,
+            user_id = id,
             ingredient_name = ingredient_req.ingredient_name,
-            cost_per_kg = ingredient_req.cost_per_kg,
+            cost = ingredient_req.cost,
+            unit_of_meassure = ingredient_req.unit_of_meassure,
             has_gluten = ingredient_req.has_gluten ,
             is_vegan = ingredient_req.is_vegan,
             supplier = ingredient_req.supplier,
@@ -41,7 +44,6 @@ class IngredientsService(IngredientsRepository):
         except Exception as error:
             raise HTTPException(status_code=500, detail=f"Error creating ingerdient in /ingredients/service: {error}")
         
-    
     def update_ingredient(self, updates: IngredientUpdateReq, user_id):
       
         ingredient = self.ingredients_repository.get_ingredient_by_id(updates.ingredient_id)
@@ -55,14 +57,11 @@ class IngredientsService(IngredientsRepository):
                 ingredient_dict[i[0]] = i[1]
         
         self.ingredients_repository.update_ingredient(user_id, ingredient_dict)
-        #return JSONResponse(status_code=200, content="Ingredient updated successfully")
 
-    def delete_ingredient(ingredient_id:str):
-        to_delete: Ingredient = ingredients_repository.get_ingredient_by_id(ingredient_id)
-        if not to_delete:
-            raise HTTPException(status_code=404, detail=f"Ingredient not found")
+    def delete_ingredient(self, ingredient_id):
         try:
-            ingredients_repository.delete_ingredient(ingredient_id)
+            to_delete: Ingredient = ingredients_repository.get_ingredient_by_id(ingredient_id)
         except Exception as e:
-            raise HTTPException(status_code=500, detail=f"Error deleting ingredient {to_delete.ingredient_name}: {e}")
-        
+            raise HTTPException(status_code=404, detail=f"Ingredient not found: {e}")
+        ingredients_repository.delete_ingredient(ingredient_id)
+        return JSONResponse(status_code=200, content=f'Ingredient "{to_delete.ingredient_name}" deleted successfully.')

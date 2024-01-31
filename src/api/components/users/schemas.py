@@ -1,12 +1,14 @@
 from pydantic import BaseModel, EmailStr, model_validator
 from typing import Optional
+from datetime import datetime
+
 
 class User(BaseModel):
     user_id: str
     name: str
     email: EmailStr
     password_hash: str
-    creation_date: str
+    creation_date: datetime
     role: str
     confirmation_code: int
 

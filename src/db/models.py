@@ -4,16 +4,13 @@
 from sqlalchemy import Column, Integer, String, ForeignKey, DateTime, Boolean, Enum, Float, UniqueConstraint
 from sqlalchemy.orm import relationship
 from datetime import datetime
-from enum import Enum as pyEnum
 from sqlalchemy.types import Enum
-from src.db.database import Base, engine
+from os import getenv
+from passlib.context import CryptContext
+import uuid
 
-class UserRole(str, pyEnum):
-    user = "5cfbe49a-c985-4d11-94f7-7a7240f1ad35"
-    admin = "5d75f0e3-394e-466b-9f74-e2f2c1f1fd4d"
-    deleted = "aa9b1d4a-1c4d-4e67-ad2c-dbf36bdf1b8e"
-    guest = "e0c33d6b-f2f4-4cc2-b907-1bb083c6af7b"
-    unconfirmed = "7b11fd10-c30e-4122-8735-3d95f98f4ee7"
+from src.db.database import Base, engine, session
+from src.db.enums import UserRole, Unit_of_meassure
 
 class User(Base):
     __tablename__ = 'users'
@@ -33,22 +30,23 @@ class Recipe(Base):
     __tablename__ = 'recipes'
     recipe_id = Column(Integer, primary_key=True)
     user_id = Column(String, ForeignKey('users.user_id'))
-    recipe_name = Column(String, nullable=False)
-    unit_weight = Column(Integer, default=0)
-
+    recipe_name = Column(String, nullable=False, default='Recipe')
+    weight_per_unit = Column(Integer, default=0)
+    category = Column(String, nullable=False, default='All Recipes')
     user = relationship('User', back_populates='recipes')
     ingredients = relationship('IngredientRecipe', back_populates='recipe')
 
 class Ingredient(Base):
     __tablename__ = 'ingredients'
-    ingredient_id = Column(Integer, autoincrement="auto", primary_key=True, unique=True)
+    ingredient_id = Column(String, primary_key=True, unique=True)
     user_id = Column(String, ForeignKey('users.user_id'))
     ingredient_name = Column(String, nullable=False)
-    cost_per_kg = Column(Float, nullable=False, default=0)
+    cost = Column(Float, nullable=False, default=0)
+    unit_of_meassure = Column(Enum(Unit_of_meassure), nullable=False)
     has_gluten = Column(Boolean, nullable=False, default=False)
     is_vegan = Column(Boolean, nullable=False, default=False)
-    supplier = Column(String, nullable=False, default="No defined supplier")
-    brand = Column(String, nullable=False, default="No defined brand")
+    supplier = Column(String, nullable=False, default="Undefined supplier")
+    brand = Column(String, nullable=False, default="Undefined brand")
        
     recipes = relationship('IngredientRecipe', back_populates='ingredient')
     user = relationship('User', back_populates='ingredients')
@@ -58,8 +56,9 @@ class IngredientRecipe(Base):
     __tablename__ = 'ingredients_recipes'
     ingredient_recipe_id = Column(Integer, primary_key=True)
     recipe_id = Column(Integer, ForeignKey('recipes.recipe_id'))
-    ingredient_id = Column(Integer, ForeignKey('ingredients.ingredient_id'))
+    ingredient_id = Column(String, ForeignKey('ingredients.ingredient_id'))
     weight = Column(Integer, nullable=False)
+    unit_of_meassure = Column(Enum(Unit_of_meassure), nullable=False)
 
     recipe = relationship('Recipe', back_populates='ingredients')
     ingredient = relationship('Ingredient', back_populates='recipes')
@@ -75,6 +74,44 @@ class SharedRecipe(Base):
     to_user = relationship('User', back_populates='shared_recipes', foreign_keys='SharedRecipe.to_user_id')
     recipe = relationship('Recipe')
 
+#### Lookup Tables ####
+
+class UnitOfMeassureLookup(Base):
+    __tablename__ = 'Units_of_meassure_lookup'
+    id = Column(Integer, primary_key=True, autoincrement=True, unique=True)
+    unit_of_meassure  = Column(String, unique=True)
+
+class UserRolesLookup(Base):
+    __tablename__ = 'User_roles_lookup'
+    id = Column(Integer, primary_key=True, autoincrement=True, unique=True)
+    user_role = Column(String, unique=True)
+
 if __name__ == "__main__":
     Base.metadata.drop_all(engine)
     Base.metadata.create_all(engine)
+    print("Migrations to database executed correctly.")
+
+#### INSERTION OF ENUMS DATA INTO LOOKUP TABLES:
+
+    for unit in Unit_of_meassure:
+        new_unit = UnitOfMeassureLookup(unit_of_meassure=unit.value)
+        session.add(new_unit)
+
+    for role in UserRole:
+        new_role = UserRolesLookup(user_role=role.name)
+        session.add(new_role)
+
+####  INSERTION OF ADMIN USER DATA INTO USERS TABLE:
+    bcrypt_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+
+    name = getenv("NAME")
+    email = getenv("ADMIN_EMAIL")
+    role = UserRole.admin
+
+    admin_user_password = getenv("PASSWORD")
+    admin_user_password_hash = bcrypt_context.hash(admin_user_password)
+    admin_user = User(user_id = str(uuid.uuid4()), name=name, email=email, password_hash=admin_user_password_hash, role=role)
+    
+    session.add(admin_user)
+    session.commit()
+    session.close()

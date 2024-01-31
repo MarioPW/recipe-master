@@ -1,9 +1,5 @@
 from fastapi import HTTPException
 from src.db.models import Ingredient
-from src.api.components.ingredients.schemas import IngredientUpdateReq
-from typing import  Dict
-
-
 
 class IngredientsRepository:
 
@@ -19,7 +15,7 @@ class IngredientsRepository:
     def get_ingredient_by_name(self, ingredient_name: str):
         return self.sess.query(Ingredient).filter(Ingredient.ingredient_name==ingredient_name).first()
     
-    def get_ingredient_by_id(self, ingredient_id: int):
+    def get_ingredient_by_id(self, ingredient_id: str):
         try:
             return self.sess.query(Ingredient).filter(Ingredient.ingredient_id==ingredient_id).first()
         except Exception as e:
@@ -29,7 +25,7 @@ class IngredientsRepository:
         try:
             self.sess.add(new_ingredient)
             self.sess.commit()           
-            return {"message": f"Ingredient {new_ingredient.ingredient_name} created siccessfully"}
+            return {"message": f'Ingredient " {new_ingredient.ingredient_name} " created siccessfully'}
         except Exception as err:
             self.sess.rollback()
             raise HTTPException(status_code=500, detail=f"Couldn't create ingredient {new_ingredient.ingredient_name}: {err}")
@@ -62,7 +58,7 @@ class IngredientsRepository:
         except Exception as e:
             raise HTTPException(status_code=500, detail=f"Couldn't update ingredient in repository: {e}")
         
-    def delete_ingredient(self, id:str):
+    def delete_ingredient(self, id):
         to_delete = self.sess.query(Ingredient).filter(Ingredient.ingredient_id==id).first()
         if not to_delete:
             raise HTTPException(status_code=404, detail="Ingredient not found")
