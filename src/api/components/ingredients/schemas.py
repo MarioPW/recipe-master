@@ -21,8 +21,8 @@ class IngredientReq(BaseModel):
     brand: str
 
 class IngredientUpdateReq(BaseModel):
-    ingredient_id: str
     ingredient_name: str = None
+    ingredient_id: str
     cost: float = None
     unit_of_meassure: Unit_of_meassure = None
     has_gluten: bool = None

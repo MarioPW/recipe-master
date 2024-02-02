@@ -16,71 +16,62 @@ class UserService(UserRepository):
         self.user_repository = UserRepository(session)
 
     def get_all_users(self):
-        try:
-            return self.user_repository.get_all_users()
-        except:
-            raise HTTPException(status_code=500, detail=f"Something went wrong getting all users in service")
-    
-    def confirm_user(self, code):
-        try:
-            exist_user = self.user_repository.get_user_by_confirmation_code(code)
-            if not exist_user:
-                content = {"message": "Incorrect code."}
-                return content
+        return self.user_repository.get_all_users()
+ 
+    def confirm_user(self, code):      
+        exist_user = self.user_repository.get_user_by_confirmation_code(code)
+        if not exist_user:
+            return JSONResponse(status_code=400, content="Incorrect code.")
+        try:      
             confirmed_user = {
                 "role": UserRole.user,
                 "confirmation_code": 1
                 }
-            return self.user_repository.update_user(exist_user.user_id, confirmed_user)
-        except Exception as error:
-            return f"Something went wrong creating register submition in service: {error}"
-
+        except Exception as e:
+            raise HTTPException(status_code=400, detail=f"Something went wrong confirming submition in service: {e}")
+        return self.user_repository.update_user(exist_user.user_id, confirmed_user)
+    
     def create_register_submition(self, data: UserRegister):
         email_exists = self.user_repository.get_user_by_email(data.email)
         if email_exists != None:
-            return f"User with email {data.email} already exists."
-        try:          
-            email_handler = EmailHandler(data.email)
-            email_handler.send_verification_email()
-        except Exception as e:
-            return f"Error sending email: {e}"
-        user = User( 
+            raise HTTPException(status_code=404, detail=f"User with email {data.email} already exists.")         
+        email_handler = EmailHandler(data.email)
+        email_handler.send_verification_email()
+
+        try:
+            user = User( 
                 user_id = str(uuid.uuid4()),
                 name = data.user_name,
                 email = data.email,
+                role = UserRole.unconfirmed,
                 password_hash = get_password_hash(data.password),
                 confirmation_code = email_handler.get_verification_code()
                 )
-        try:
-            unconfirmed_user = self.user_repository.create_user(user)
-            if unconfirmed_user == None:
-                raise HTTPException(status_code=409, detail="Error")
-            return f"We've sended a verification Email to {data.email}"
-            
+            success = self.user_repository.create_user(user)
+            if success:
+                return JSONResponse(status_code=200, content=f"Verification email sended to {data.email}")
         except Exception as e:
-                return f"Something went wrong in service: {e}"
+            raise HTTPException(status_code=400, detail=f"Error creating register submition in service: {e}")
 
-    def login(self, user_data):
-        try:           
-            user_db = self.user_repository.get_user_by_email(user_data.username)
-            if not user_db:
-                raise HTTPException(status_code=400, detail=f"User {user_data.username} not found")
-            verified_password = verify_password(user_data.password, user_db.password_hash)
-            if not verified_password:
-                raise HTTPException(status_code=400, detail="Incorrect User or Password")
+    def login(self, user_data):          
+        user_db = self.user_repository.get_user_by_email(user_data.username)
+        if not user_db:
+            raise HTTPException(status_code=400, detail=f"User {user_data.username} not found")
+        verified_password = verify_password(user_data.password, user_db.password_hash)
+        if not verified_password:
+            raise HTTPException(status_code=400, detail="Incorrect User or Password")
+        try:    
             user_data_token = {
                 "user_id": user_db.user_id,
                 "name": user_db.name,
                 "role": user_db.role
-            }
-            return {
-                "access_token": create_access_token(user_data_token),
-                "token_type": "bearer"
                 }
-        except HTTPException as http_error:
-            raise http_error
+            return {
+                    "access_token": create_access_token(user_data_token),
+                    "token_type": "bearer"
+                }
         except Exception as e:
-            raise HTTPException(status_code=500, detail=f"Something went wrong in service: {e}")
+            raise HTTPException(status_code=400, detail=f"Error creating user token: {e}")
         
     def forgot_password(self, email):
         user = self.user_repository.get_user_by_email(email)
@@ -96,29 +87,23 @@ class UserService(UserRepository):
     def get_user_by_id(self, user_id: str):
         return self.user_repository.get_user_by_id(user_id)
 
-    def get_user_by_email(self, user_email: EmailStr):
-        try:
-            user = self.user_repository.get_user_by_email(user_email)
-            if not user:           
-                return f"Couldn't find user {user_email}"
-            return user
-        except Exception as error:
-            return f"Something went wrong getting user by email in service: {error}"
+    def get_user_by_email(self, user_email: EmailStr): 
+        return self.user_repository.get_user_by_email(user_email)
 
     def update_user(self, user_id: str, user_updates: UserUpdateReq):
+        user: User = self.user_repository.get_user_by_id(user_id)
+        verified_password = verify_password(user_updates.current_password, user.password_hash)
+        if not verified_password:
+            raise HTTPException(status_code=400, detail=f"Incorrect password")
         try:
-            user: User = self.user_repository.get_user_by_id(user_id)
-            verified_password = verify_password(user_updates.current_password, user.password_hash)
-            if not verified_password:
-                return f"Incorrect password"
             updated_user = {
                 "name": user_updates.name,
                 "email": user_updates.email,
                 "password_hash": get_password_hash(user_updates.new_password)
                 }
-            return self.user_repository.update_user(user.user_id, updated_user)              
-        except Exception as error:
-            return f"Something went wrong in service...{error}"
+        except Exception as e:
+            raise HTTPException(status_code=400, detail=f"Something went wrong updating user in service: {e}")
+        return self.user_repository.update_user(user.user_id, updated_user)              
 
     def delete_user(self, user_id: str):
         return self.user_repository.delete_user(user_id)

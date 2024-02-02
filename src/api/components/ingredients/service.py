@@ -19,19 +19,16 @@ class IngredientsService(IngredientsRepository):
         return ingredients_repository.get_all_ingredients(user_id)
     
     def get_ingredient_by_id(self, id: str):
-        try:
-            return ingredients_repository.get_ingredient_by_id(id)
-        except:
-            raise HTTPException(status_code=400, detail="Ingredient not found")
+        return ingredients_repository.get_ingredient_by_id(id)
 
     def create_ingredient(self, ingredient_req:IngredientReq, user_id):
         user_exists: User = user_repository.get_user_by_id(user_id)
-        id = str(uuid.uuid4())
         if not user_exists:
             raise HTTPException(status_code=404, detail="User not found")       
         try:
             new_ingredient = Ingredient(
-            user_id = id,
+            ingredient_id = str(uuid.uuid4()),
+            user_id = user_id,
             ingredient_name = ingredient_req.ingredient_name,
             cost = ingredient_req.cost,
             unit_of_meassure = ingredient_req.unit_of_meassure,
@@ -39,10 +36,10 @@ class IngredientsService(IngredientsRepository):
             is_vegan = ingredient_req.is_vegan,
             supplier = ingredient_req.supplier,
             brand = ingredient_req.brand
-            )
-            return self.ingredients_repository.create_ingredient(new_ingredient)
+            )      
         except Exception as error:
             raise HTTPException(status_code=500, detail=f"Error creating ingerdient in /ingredients/service: {error}")
+        return self.ingredients_repository.create_ingredient(new_ingredient)
         
     def update_ingredient(self, updates: IngredientUpdateReq, user_id):
       
@@ -56,7 +53,7 @@ class IngredientsService(IngredientsRepository):
             if i[1] is not None:
                 ingredient_dict[i[0]] = i[1]
         
-        self.ingredients_repository.update_ingredient(user_id, ingredient_dict)
+        self.ingredients_repository.update_ingredient(ingredient_dict)
 
     def delete_ingredient(self, ingredient_id):
         try:

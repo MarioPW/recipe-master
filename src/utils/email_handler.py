@@ -1,4 +1,5 @@
 from fastapi.responses import JSONResponse
+from fastapi import HTTPException
 import smtplib
 from email.message import EmailMessage
 import ssl
@@ -48,10 +49,12 @@ class EmailHandler:
         """
         msg.set_content(html_message, subtype='html')
         context1 = ssl.create_default_context()
-        # send email
-        with smtplib.SMTP_SSL('smtp.gmail.com', 465, context=context1) as smtp:
-            smtp.login(self.email_address, self.email_password)
-            smtp.send_message(msg)
+        try:
+            with smtplib.SMTP_SSL('smtp.gmail.com', 465, context=context1) as smtp:
+                smtp.login(self.email_address, self.email_password)
+                smtp.send_message(msg)
+        except Exception as e:
+            raise HTTPException(status_code=400, detail=f"Error sendin email in src/utils/email_handler.py: {e}")
       
     def send_change_password_email(self):
         msg = EmailMessage()
@@ -85,11 +88,13 @@ class EmailHandler:
         """
         msg.set_content(html_message, subtype='html')
         context1 = ssl.create_default_context()
-        # send email
-        with smtplib.SMTP_SSL('smtp.gmail.com', 465, context=context1) as smtp:
-            smtp.login(self.email_address, self.email_password)
-            smtp.send_message(msg)
-        return JSONResponse(status_code=200, content={"message": f'Email to {self.email} sended successfully'})
+        try:
+          with smtplib.SMTP_SSL('smtp.gmail.com', 465, context=context1) as smtp:
+              smtp.login(self.email_address, self.email_password)
+              smtp.send_message(msg)
+          return JSONResponse(status_code=200, content={"message": f'Email to {self.email} sended successfully'})
+        except Exception as e:
+            raise HTTPException(status_code=400, detail=f"Error sending change password email: {e}")
   
 # Test
 if __name__ == "__main__":

@@ -5,7 +5,7 @@ from src.db.models import UserRole
 from src.api.components.users.repository import UserRepository
 from src.api.components.users.service import session
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/v1/users/login")
-ADMIN, USER, UNCONFIRMED = UserRole.admin, UserRole.user, UserRole.unconfirmed
+# ADMIN, USER, UNCONFIRMED = UserRole.admin, UserRole.user, UserRole.unconfirmed
 
 user_repository = UserRepository(session)
 
@@ -18,9 +18,9 @@ def roles_required(allowed_roles:list, token=None, code=None) -> None:
     elif code:
         user = user_repository.get_user_by_confirmation_code(code)    
     if user is None or user.role not in allowed_roles:
-        raise HTTPException(status_code=403, detail="Access denied")
+        raise HTTPException(status_code=403, detail=f"Access denied {decoded_user}")
     
-def roles_required_ingredients(allowed_roles:list, token=None, code=None):
+def roles_required_in_ingredients(allowed_roles:list, token=None, code=None):
     user = None
     if token:
         decoded_user = verify_token(token)

@@ -35,7 +35,7 @@ class UserUpdateReq(BaseModel):
     name: Optional[str]
     email: Optional[EmailStr]
     current_password: str
-    new_password: Optional[str]
+    new_password: Optional[str] = None
     @model_validator(mode='after')
     def check_passwords_match(self) -> 'UserUpdateReq':
         current_password = self.current_password

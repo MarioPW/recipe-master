@@ -19,11 +19,12 @@ class User(Base):
     email = Column(String, unique=True, nullable=False)
     password_hash = Column(String, nullable=False)
     creation_date = Column(DateTime,default=datetime.now,onupdate=datetime.now)
-    role = Column(Enum(UserRole), default=UserRole.unconfirmed)
+    role = Column(String, ForeignKey('user_roles_lookup.user_role'))
     confirmation_code = Column(Integer, nullable=False, default=0)
     
     ingredients = relationship('Ingredient', back_populates='user')
     recipes = relationship('Recipe', back_populates='user')
+    user_roles_lookup = relationship('UserRolesLookup', back_populates='user')
     shared_recipes = relationship('SharedRecipe', back_populates='from_user', foreign_keys='SharedRecipe.from_user_id')
 
 class Recipe(Base):
@@ -42,7 +43,7 @@ class Ingredient(Base):
     user_id = Column(String, ForeignKey('users.user_id'))
     ingredient_name = Column(String, nullable=False)
     cost = Column(Float, nullable=False, default=0)
-    unit_of_meassure = Column(Enum(Unit_of_meassure), nullable=False)
+    unit_of_meassure = Column(String, ForeignKey("units_of_meassure_lookup.unit_of_meassure"))
     has_gluten = Column(Boolean, nullable=False, default=False)
     is_vegan = Column(Boolean, nullable=False, default=False)
     supplier = Column(String, nullable=False, default="Undefined supplier")
@@ -50,6 +51,7 @@ class Ingredient(Base):
        
     recipes = relationship('IngredientRecipe', back_populates='ingredient')
     user = relationship('User', back_populates='ingredients')
+    units_of_meassure_lookup = relationship('UnitOfMeassureLookup', back_populates='ingredient')
     __table_args__ = (UniqueConstraint('user_id', 'ingredient_name', name='uq_user_ingredient_name'),)
 
 class IngredientRecipe(Base):
@@ -77,14 +79,18 @@ class SharedRecipe(Base):
 #### Lookup Tables ####
 
 class UnitOfMeassureLookup(Base):
-    __tablename__ = 'Units_of_meassure_lookup'
+    __tablename__ = 'units_of_meassure_lookup'
     id = Column(Integer, primary_key=True, autoincrement=True, unique=True)
     unit_of_meassure  = Column(String, unique=True)
 
+    ingredient = relationship('Ingredient', back_populates='units_of_meassure_lookup')
+
 class UserRolesLookup(Base):
-    __tablename__ = 'User_roles_lookup'
+    __tablename__ = 'user_roles_lookup'
     id = Column(Integer, primary_key=True, autoincrement=True, unique=True)
     user_role = Column(String, unique=True)
+
+    user = relationship('User', back_populates='user_roles_lookup')
 
 if __name__ == "__main__":
     Base.metadata.drop_all(engine)
@@ -106,7 +112,7 @@ if __name__ == "__main__":
 
     name = getenv("NAME")
     email = getenv("ADMIN_EMAIL")
-    role = UserRole.admin
+    role = UserRole.admin.name
 
     admin_user_password = getenv("PASSWORD")
     admin_user_password_hash = bcrypt_context.hash(admin_user_password)
