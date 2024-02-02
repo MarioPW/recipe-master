@@ -8,7 +8,7 @@ from os import getenv
 
 load_dotenv()
 
-JWT_KEY = getenv("JWT_SECRET")
+JWT_SECRET_KEY = getenv("JWT_SECRET_KEY")
 ALGORITHM = getenv("ALGORITHM")
 TOKEN_EXPIRE = int(getenv("ACCESS_TOKEN_EXPIRE_SEC"))
 
@@ -21,12 +21,12 @@ def create_access_token(data: dict):
     expiration = datetime.utcnow() + timedelta(minutes=TOKEN_EXPIRE)
     expiration_str = expiration.isoformat()
     data["expire"] = expiration_str   
-    token = jwt.encode(claims=data, key=JWT_KEY, algorithm=ALGORITHM)
+    token = jwt.encode(claims=data, key=JWT_SECRET_KEY, algorithm=ALGORITHM)
     return token
     
 def verify_token(token) -> dict:
     try:
-        payload = jwt.decode(token,key=JWT_KEY)
+        payload = jwt.decode(token,key=JWT_SECRET_KEY)
         return payload
     except JWTError as ex:
         print(str(ex))

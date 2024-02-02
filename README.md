@@ -2,6 +2,7 @@
 
 * User SignIn-Login with user roles sistem. ✓
 * The users can create, read, update, or delete their recipes (CRUD).
+* The users can create, read, update, or delete their ingredients (CRUD).
 * The user can access a list of all the ingredients in their recipes.
 * The user can assign cost to each of their ingredients in diferent weight or volume units.
 * The user can save a list of products with their weight per unit.
@@ -76,22 +77,23 @@ Create a .env file to store the configuration of your database, JWT, email, and 
 
 3. Define the environment variables:
 
-  ```python
+  ```bash
   # In this example PostgreSQL is used:
 
   DB_URL = "postgresql://your_username:your_secret_password@localhost/your_database_name"
   'Make sure to replace your_username, your_secret_password, your_database_name, and other values with your specific configuration.'
 
-  # JWT credentials: 
+  # JSON web token credentials
 
-  JWT_SECRET = "Secret key for decrypting youre JWT's"
+  JWT_SECRET_KEY = "Secret key for decrypting youre JWT's"
   ALGORITHM = "HS256"
-  ACCESS_TOKEN_EXPIRE_MIN=30
+  ACCESS_TOKEN_EXPIRE_MIN=30 "Duration in minutes that you want the session to last."
 
   # This email account will be used to send email notifications, verification signup codes, and newsletters to the users.
 
   EMAIL="example@gmail.com" *Youre enterprise email*
   EMAIL_PASSWORD="examplepassword" *This password must be a SMPT password.*
+  CHANGE_PASSWORD_ENDPIONT=""
 
   # Admin user credentials:
 
