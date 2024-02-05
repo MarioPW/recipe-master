@@ -18,9 +18,9 @@ def roles_required(allowed_roles:list, token=None, code=None) -> None:
     elif code:
         user = user_repository.get_user_by_confirmation_code(code)    
     if user is None or user.role not in allowed_roles:
-        raise HTTPException(status_code=403, detail=f"Access denied {decoded_user}")
+        raise HTTPException(status_code=403, detail="Access denied")
     
-def roles_required_in_ingredients(allowed_roles:list, token=None, code=None):
+def roles_required_returninig_user_data(allowed_roles:list, token=None, code=None):
     user = None
     if token:
         decoded_user = verify_token(token)

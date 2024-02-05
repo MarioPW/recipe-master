@@ -5,6 +5,7 @@ from src.db.database import session
 from src.db.models import User
 from src.api.components.users.repository import UserRepository
 from src.db.models import Ingredient
+from src.db.enums import Unit_of_meassure
 from src.api.components.ingredients.repository import IngredientsRepository
 from src.api.components.ingredients.schemas import IngredientReq, IngredientUpdateReq
 
@@ -37,8 +38,8 @@ class IngredientsService(IngredientsRepository):
             supplier = ingredient_req.supplier,
             brand = ingredient_req.brand
             )      
-        except Exception as error:
-            raise HTTPException(status_code=500, detail=f"Error creating ingerdient in /ingredients/service: {error}")
+        except Exception as e:
+            raise HTTPException(status_code=400, detail=f"Error creating ingerdient in .../ingredients/service: {e}")
         return self.ingredients_repository.create_ingredient(new_ingredient)
         
     def update_ingredient(self, updates: IngredientUpdateReq, user_id):

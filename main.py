@@ -24,8 +24,6 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# TO_DO: Render the DB_Documentation.md document to the HTML here
-
 @app.get("/", response_class=HTMLResponse, tags=["API presentation"])
 async def hello():
     html_content = f"""
@@ -42,7 +40,7 @@ async def hello():
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;">Wellcome to Recipe Manager API!</h1>
             <p style="color: aliceblue;">Save, Cost, and Manage all your recipes easily!.</p>
-        <img src='DB_Documentation.md'></img>
+        <img src=''></img>
         </div>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.24.1/prism.min.js" integrity="sha384-HnZ9HEVj01htz7ZxhqfFH1RKAu7x3jj6XW9l3W4B4vPUGjrnppq6RvfbtErS5NqD" crossorigin="anonymous"></script>
     </body>

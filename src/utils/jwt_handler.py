@@ -13,6 +13,7 @@ ALGORITHM = getenv("ALGORITHM")
 TOKEN_EXPIRE = int(getenv("ACCESS_TOKEN_EXPIRE_SEC"))
 
 pwd_context=CryptContext(schemes=["bcrypt"],deprecated="auto") 
+
 # save token to oauth2_scheme
 oauth2_scheme=OAuth2PasswordBearer(tokenUrl="user/signin")
 
@@ -36,7 +37,8 @@ def verify_token(token) -> dict:
 if __name__ == "__main__":
     user = {
         "name": "Guido",
-        "role": "5cfbe49a-c985-4d11-94f7-7a7240f1ad35"
+        "role": "user",
+        "expire": "20024/02/06/12/14/21"
         }
     token = create_access_token(user)
     decoded = verify_token(token)

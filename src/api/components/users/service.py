@@ -17,11 +17,11 @@ class UserService(UserRepository):
 
     def get_all_users(self):
         return self.user_repository.get_all_users()
- 
-    def confirm_user(self, code):      
-        exist_user = self.user_repository.get_user_by_confirmation_code(code)
-        if not exist_user:
-            return JSONResponse(status_code=400, content="Incorrect code.")
+    
+    def get_user_by_confirmation_code(self, code):
+        return self.user_repository.get_user_by_confirmation_code(code)
+
+    def confirm_user(self, unconfirmed_user: User):      
         try:      
             confirmed_user = {
                 "role": UserRole.user,
@@ -29,15 +29,11 @@ class UserService(UserRepository):
                 }
         except Exception as e:
             raise HTTPException(status_code=400, detail=f"Something went wrong confirming submition in service: {e}")
-        return self.user_repository.update_user(exist_user.user_id, confirmed_user)
+        return self.user_repository.update_user(unconfirmed_user.user_id, confirmed_user)
     
-    def create_register_submition(self, data: UserRegister):
-        email_exists = self.user_repository.get_user_by_email(data.email)
-        if email_exists != None:
-            raise HTTPException(status_code=404, detail=f"User with email {data.email} already exists.")         
+    def create_register_submition(self, data: UserRegister):                
         email_handler = EmailHandler(data.email)
         email_handler.send_verification_email()
-
         try:
             user = User( 
                 user_id = str(uuid.uuid4()),
@@ -47,12 +43,12 @@ class UserService(UserRepository):
                 password_hash = get_password_hash(data.password),
                 confirmation_code = email_handler.get_verification_code()
                 )
-            success = self.user_repository.create_user(user)
-            if success:
-                return JSONResponse(status_code=200, content=f"Verification email sended to {data.email}")
         except Exception as e:
             raise HTTPException(status_code=400, detail=f"Error creating register submition in service: {e}")
-
+        success = self.user_repository.create_user(user)
+        if success:
+            return JSONResponse(status_code=200, content=f"Verification email sended to {data.email}")
+        
     def login(self, user_data):          
         user_db = self.user_repository.get_user_by_email(user_data.username)
         if not user_db:
@@ -76,7 +72,7 @@ class UserService(UserRepository):
     def forgot_password(self, email):
         user = self.user_repository.get_user_by_email(email)
         if type(user) != User:
-            raise HTTPException(status_code=404, detail={"message": f'User "{email}" not found.'})
+            raise HTTPException(status_code=404, detail=f'User "{email}" not found')
         email_handler = EmailHandler(user.email)
         try:
             email_handler.send_change_password_email()

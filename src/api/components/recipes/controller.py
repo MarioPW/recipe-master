@@ -1,6 +1,6 @@
-from fastapi import APIRouter, HTTPException, Depends, Request, Response
+from fastapi import APIRouter, HTTPException, Depends
 from src.db.models import UserRole
-from src.utils.roles_required import roles_required, verify_token
+from src.middleware.role_auth import roles_required, verify_token
 from src.api.components.users.controller import oauth2_scheme
 
 recipes_router = APIRouter(

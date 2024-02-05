@@ -24,9 +24,9 @@ class UserRegister(BaseModel):
         password_confirm = self.password_confirm
         if password is not None and password_confirm is not None and password != password_confirm:
             raise ValueError('PASSWORDS MUST MATCH')
-        elif len(self.user_name) <= 0:
+        elif self.user_name is None or self.user_name == '':
             raise ValueError("Name is Required")
-        elif len(self.email) <= 0:
+        elif self.email is None or self.email == '':
             raise ValueError("Email is Required")
         else:
             return self

@@ -32,7 +32,7 @@ class EmailHandler:
               <div style="text-align: center;">
                 <p style= "font-weight: bold;
                           font-family: sans-serif;"
-                          >Type or copy-paste this code to verify your registration:</p>
+                          >Type or copy-paste this code to verify your registration in www.recipemaster.com:</p>
                 <p style="display: inline-block;
                           background-color: rgb(61, 61, 254);
                           padding: 7px 11px;
@@ -76,8 +76,8 @@ class EmailHandler:
                         text-decoration:none;
                         padding:11px 16px 13px 16px;
                         border-radius:8px;
-                        text-align:center"
-                        href='{self.change_password_endpiont}'>Reset Password</a>
+                        text-align:center;" 
+                        href={self.change_password_endpiont}>Reset Password</a>
               <p>If you don't want to reset your password, ignore this message.</br>Your password will not be reset.
                 Happy collaborating,
                 Recipe Master Team
@@ -98,6 +98,6 @@ class EmailHandler:
   
 # Test
 if __name__ == "__main__":
-    WEB_MASTER_EMAIL = getenv('WEB_MASTER_EMAIL')
-    mail = EmailHandler("WEB_MASTER_EMAIL")
-    mail.send_verification_email()
+    web_master_email = getenv('WEB_MASTER_EMAIL')
+    mail = EmailHandler(web_master_email)
+    mail.send_change_password_email()

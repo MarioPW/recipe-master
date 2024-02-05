@@ -24,7 +24,7 @@ class IngredientsRepository:
         except Exception as e:
             raise HTTPException(status_code=500, detail=f"Error getting ingredient by id in repository: {e}")
 
-    def create_ingredient(self, new_ingredient: Ingredient):
+    def create_ingredient(self, new_ingredient):
         try:
             self.sess.add(new_ingredient)
             self.sess.commit()           

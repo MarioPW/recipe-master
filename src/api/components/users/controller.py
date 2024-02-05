@@ -3,7 +3,7 @@ from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from pydantic import EmailStr
 from src.api.components.users.service import UserService
 from src.api.components.users.schemas import User, UserRegister, UserUpdateReq, ConfirmationCode
-from src.middleware.role_auth import roles_required
+from src.middleware.role_auth import roles_required, roles_required_returninig_user_data
 from src.db.models import UserRole
 from src.utils.jwt_handler import verify_token
 
@@ -14,6 +14,9 @@ users_router = APIRouter(
 user_service = UserService()
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/v1/users/login")
 ADMIN, USER, UNCONFIRMED = UserRole.admin, UserRole.user, UserRole.unconfirmed
+
+async def admin_role_required(token: str = Depends(oauth2_scheme)):
+    return roles_required_returninig_user_data([ADMIN], token)
 
 @users_router.get("/", response_model=list[User])
 def get_all_users(token: str = Depends(oauth2_scheme)) -> []:
@@ -30,14 +33,20 @@ def get_user_by_email(user_email: EmailStr, token: str = Depends(oauth2_scheme))
     roles_required([ADMIN], token)
     return user_service.get_user_by_email(user_email)
 
-@users_router.post("/register_submission")
+@users_router.post("/register")
 def create_register_submition(data: UserRegister):
+    email_exist = user_service.get_user_by_email(data.email)
+    if email_exist:
+        raise HTTPException(status_code=409, detail=f"User with mail {data.email} already exists.")
     return user_service.create_register_submition(data)                
     
 @users_router.post("/confirm_user")
 def confirm_user(confirmation_code: ConfirmationCode):
     roles_required([ADMIN, UNCONFIRMED], code=confirmation_code)
-    return user_service.confirm_user(confirmation_code)
+    exist_user = user_service.get_user_by_confirmation_code(confirmation_code)
+    if not exist_user:
+        raise HTTPException(status_code=400, detail="Incorrect code")
+    return user_service.confirm_user(exist_user)
 
 @users_router.post("/login")
 def login(data: OAuth2PasswordRequestForm = Depends()):
