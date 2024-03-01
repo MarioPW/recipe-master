@@ -1,8 +1,8 @@
 from fastapi import HTTPException
 from fastapi.responses import JSONResponse
-from typing import  Dict
+from typing import  Dict, List
 from pydantic import EmailStr
-from src.db.models import User, UserRole
+from src.db.models import User, UserRole, ResetPasswordToken
 
 class UserRepository:
     def __init__(self, session):
@@ -10,7 +10,7 @@ class UserRepository:
     
     def get_all_users(self):
         try:
-            all_users: [] = self.sess.query(User).all()
+            all_users: List = self.sess.query(User).all()
             return all_users
         except Exception as e:
             raise HTTPException(status_code=500, detail=f"Error getting all users in repository: {e}")
@@ -52,6 +52,19 @@ class UserRepository:
             return JSONResponse(status_code=200, content={"message": f"User {updated_user.name} updated successfully."})
         except Exception as e:
             raise HTTPException(status_code=500, detail=f"Error updating user in repository: {e}")
+    
+    def save_reset_password_token(self, reset_password_token: ResetPasswordToken):
+        try:
+            self.sess.add(reset_password_token)
+            self.sess.commit()
+        except Exception as e:
+            raise HTTPException(status_code=500, detail=f"Error creating reset_password_token in users/repository: {e}")
+    
+    def get_reset_password_token(self, token):
+        try:
+            return self.sess.query(ResetPasswordToken).filter(ResetPasswordToken.token == str(token)).first()
+        except Exception as e:
+            raise HTTPException(status_code=500, detail=f"Error getting reset_password_token in users/repository: {e}")
 
     # SOFT DELETION
     def delete_user(self, id:str):

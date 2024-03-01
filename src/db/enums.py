@@ -8,11 +8,11 @@ class UserRole(str, pyEnum):
     unconfirmed = "unconfirmed"
 
 class Unit_of_meassure(pyEnum):
-    KILOGRAM = "kg"
+    KILOGRAM = "Kg"
     GRAM = "g"
     POUND = "lb"
     OUNCE = "oz"
     LITER = "L"
-    MILLILITER = "ml"
+    MILLILITER = "mL"
     GALLON = "gal"
     FLUID_OUNCE = "fl_oz"

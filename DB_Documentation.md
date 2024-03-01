@@ -53,26 +53,26 @@ ___
 
 ***Users_Table***
 
-| user_id | username | email               | password_hash
+| user_id | name     | email               | password_hash
 |---------|----------|---------------------|----------
 | 1       | user1    | user1@example.com   | 2w3er456hsg
 | 2       | user2    | user2@example.com   | 6w3er45123
 
 ***Recipes_Table***
 
-| recipe_id | user_id (FK to Users table) | recipe_name    | unit_weight|
-|-----------|-----------------------------|----------------|------------|
-| 1         | 1                           | Bread Recipe   |       80 g |
-| 2         | 1                           | Cake Recipe    |      500 g |
-| 3         | 1                           | Cookie Recipe  |      100 g |
-| 4         | 2                           | Pie Recipe     |      500 g |
-| 5         | 2                           | Muffin Recipe  |       80 g |
+| recipe_id | user_id (FK to Users table) | recipe_name    | product_weight | unit_of_meassure |
+|-----------|-----------------------------|----------------|----------------|------------------|
+| 1         | 1                           | Bread Recipe   |       80       | g                |
+| 2         | 1                           | Cake Recipe    |      500       | g                |
+| 3         | 1                           | Cookie Recipe  |      100       | g                |
+| 4         | 2                           | Pie Recipe     |      500       | g                |
+| 5         | 2                           | Muffin Recipe  |       80       | g                |
 
 ***Ingerdient_Recipe Table example:***
 
 | ingredient_recipe_id | recipe_id | ingredient_id | weight | unit_of_meassure |
 |----------------------|-----------|---------------|--------|------------------|
-| 1                    | 1         | 1             | 500    | g                |  
+| 1                    | 1         | 1             | 500    | g                |
 | 3                    | 1         | 3             | 200    | g                |
 | 2                    | 1         | 2             | 300    | g                |
 | 4                    | 2         | 1             | 400    | g                |

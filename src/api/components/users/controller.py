@@ -1,25 +1,26 @@
 from fastapi import APIRouter, HTTPException,  Depends
-from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
+from fastapi.security import OAuth2PasswordRequestForm, OAuth2PasswordBearer
 from pydantic import EmailStr
+
 from src.api.components.users.service import UserService
-from src.api.components.users.schemas import User, UserRegister, UserUpdateReq, ConfirmationCode
-from src.middleware.role_auth import roles_required, roles_required_returninig_user_data
-from src.db.models import UserRole
+from src.api.components.users.schemas import User, UserRegister, UserUpdateReq, ConfirmationCode, ResetPasswordReq
+from src.middleware.role_auth import roles_required
+from src.middleware.role_dependencies import role_ADMIN, role_ADMIN_UNCONFIRMED, role_ADMIN_UNCONFIRMED, role_ADMIN_USER
 from src.utils.jwt_handler import verify_token
+from src.db.models import UserRole
 
 users_router = APIRouter(
     prefix="/users",
     tags=["Users"])
 
 user_service = UserService()
+
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/v1/users/login")
+
 ADMIN, USER, UNCONFIRMED = UserRole.admin, UserRole.user, UserRole.unconfirmed
 
-async def admin_role_required(token: str = Depends(oauth2_scheme)):
-    return roles_required_returninig_user_data([ADMIN], token)
-
 @users_router.get("/", response_model=list[User])
-def get_all_users(token: str = Depends(oauth2_scheme)) -> []:
+def get_all_users(token: str = Depends(oauth2_scheme)) -> list:
     roles_required([ADMIN], token)
     return user_service.get_all_users()
 
@@ -58,15 +59,15 @@ def update_user(user_updates: UserUpdateReq, token: str = Depends(oauth2_scheme)
     user_id: str = verify_token(token)["user_id"]
     return user_service.update_user(user_id, user_updates)
 
-@users_router.delete("/{user_id}")
-def delete_user(user_id: str, token: str = Depends(oauth2_scheme)):
-    roles_required([ADMIN, USER], token)
-    return user_service.delete_user(user_id)
+@users_router.delete("/{del_user_id}")
+def delete_user(del_user_id: str, token: str = Depends(oauth2_scheme)):
+    roles_required([ADMIN], token)
+    return user_service.delete_user(del_user_id)
 
 @users_router.post("/forgot_password/{email}")
 def forgot_password(email: EmailStr):
     return user_service.forgot_password(email)
 
-@users_router.post("/update_password/{data}")
-def update_password(email: EmailStr):
-    return user_service.forgot_password(email)
+@users_router.post("/reset_password")
+def reset_password(reset_password_req: ResetPasswordReq):
+    return user_service.reset_password(reset_password_req)

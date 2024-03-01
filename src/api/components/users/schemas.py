@@ -1,7 +1,6 @@
 from pydantic import BaseModel, EmailStr, model_validator
-from typing import Optional
 from datetime import datetime
-
+from uuid import UUID
 
 class User(BaseModel):
     user_id: str
@@ -32,18 +31,19 @@ class UserRegister(BaseModel):
             return self
 
 class UserUpdateReq(BaseModel):
-    name: Optional[str]
-    email: Optional[EmailStr]
+    name: str = None
+    email: EmailStr = None
     current_password: str
-    new_password: Optional[str] = None
+    new_password: str = None
+
     @model_validator(mode='after')
-    def check_passwords_match(self) -> 'UserUpdateReq':
+    def check_passwords_match(self):
         current_password = self.current_password
         new_password = self.new_password
         if current_password is not None and new_password is not None and current_password == new_password:
-            raise ValueError('Invalid password')
-        return self
-
+            raise ValueError('Incorrect password')
+        return new_password
+    
 class ConfirmationCode(BaseModel):
     code: int
     @model_validator(mode='after')
@@ -51,3 +51,18 @@ class ConfirmationCode(BaseModel):
         if self.code <= 1:
             raise ValueError("Code must have four digits.")
         return self.code
+    
+class ResetPasswordReq(BaseModel):
+    token: UUID
+    amail: EmailStr
+    password1: str
+    password2: str
+
+    @model_validator(mode='after')
+    def check_passwords_match(self):
+        password1 = self.password1
+        password2 = self.password2
+        if password1 is not None and password2 is not None and password1 != password2:
+            raise ValueError('PASSWORDS MUST MATCH')
+        return self
+

@@ -10,7 +10,7 @@ app.include_router(router, prefix="/api/v1")
 app.mount("/static", StaticFiles(directory="./src/utils/static_files"), name="main")
 
 origins = [
-    "http://localhost.mario.com",
+    "http://127.0.0.1:5173/",
     "https://localhost.mario.com",
     "http://localhost",
     "http://localhost:8080",
@@ -38,7 +38,7 @@ async def hello():
              <h1 style="background: #121FCF;
         background: linear-gradient(to right, #128dcf 35%, #9da806 50%, #CF009F 70%);
         -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;">Wellcome to Recipe Manager API!</h1>
+        -webkit-text-fill-color: transparent;">Wellcome to Recipe Master API!</h1>
             <p style="color: aliceblue;">Save, Cost, and Manage all your recipes easily!.</p>
         <img src=''></img>
         </div>

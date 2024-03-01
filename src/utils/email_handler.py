@@ -6,6 +6,7 @@ import ssl
 from dotenv import load_dotenv
 from os import getenv
 from pydantic import EmailStr
+import uuid
 from .create_verification_code import create_verification_code
 
 load_dotenv()
@@ -17,9 +18,13 @@ class EmailHandler:
         self.email_password = getenv("EMAIL_PASSWORD")
         self.change_password_endpiont = getenv("CHANGE_PASSWORD_ENDPIONT")
         self.verification_code = create_verification_code()
-    
+        self.reset_password_code = str(uuid.uuid1())
+
     def get_verification_code(self):
         return self.verification_code
+    
+    def get_reset_password_code(self):
+        return self.reset_password_code
   
     def send_verification_email(self):
         msg = EmailMessage()
@@ -54,7 +59,7 @@ class EmailHandler:
                 smtp.login(self.email_address, self.email_password)
                 smtp.send_message(msg)
         except Exception as e:
-            raise HTTPException(status_code=400, detail=f"Error sendin email in src/utils/email_handler.py: {e}")
+            raise HTTPException(status_code=400, detail=f"Error sending email in src/utils/email_handler.py: {e}")
       
     def send_change_password_email(self):
         msg = EmailMessage()
@@ -64,12 +69,12 @@ class EmailHandler:
         html_message = f"""\
         <html>
             <body>
-            <div style="text-align: center;">
+            <div>
               <h1 style= "font-weight: bold;
                         font-family: sans-serif;"
                         >Let's Reset your Password:</h1>
               <p>If you want to reset your Recipe Master password, use the button below. This action will take you to a secure page where you can reset it.</p>
-              <a style="display:inline-block;
+              <a type='submit' style="display:inline-block;
                         font-family:'RoobertPRO',Helvetica,Arial,sans-serif;
                         font-size:16px;line-height:24px;
                         color:#ffffff;background-color:#4262ff;
@@ -77,8 +82,8 @@ class EmailHandler:
                         padding:11px 16px 13px 16px;
                         border-radius:8px;
                         text-align:center;" 
-                        href={self.change_password_endpiont}>Reset Password</a>
-              <p>If you don't want to reset your password, ignore this message.</br>Your password will not be reset.
+                        href={self.change_password_endpiont + '/' + self.reset_password_code}>Reset Password</a>
+              <p>If you don't want to reset your password, ignore this message.<br>Your password will not be reset.
                 Happy collaborating,
                 Recipe Master Team
               </p>
@@ -92,7 +97,7 @@ class EmailHandler:
           with smtplib.SMTP_SSL('smtp.gmail.com', 465, context=context1) as smtp:
               smtp.login(self.email_address, self.email_password)
               smtp.send_message(msg)
-          return JSONResponse(status_code=200, content={"message": f'Email to {self.email} sended successfully'})
+          return JSONResponse(status_code=200, content={"message": f'Email to {self.email} sent successfully'})
         except Exception as e:
             raise HTTPException(status_code=400, detail=f"Error sending change password email: {e}")
   
@@ -100,4 +105,4 @@ class EmailHandler:
 if __name__ == "__main__":
     web_master_email = getenv('WEB_MASTER_EMAIL')
     mail = EmailHandler(web_master_email)
-    mail.send_change_password_email()
+    mail.send_verification_email()

@@ -6,10 +6,10 @@ from os import getenv
 
 load_dotenv()
 
-SQLALCHEMY_DATABASE_URL = getenv("DB_URL")
+DATABASE_URL = getenv("DB_URL")
 
 try:
-    engine = create_engine(SQLALCHEMY_DATABASE_URL)
+    engine = create_engine(DATABASE_URL)
     Base = declarative_base()
     Session = sessionmaker(autocommit=False, autoflush=False, bind=engine)
     session = Session()

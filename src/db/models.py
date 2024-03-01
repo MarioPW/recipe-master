@@ -1,10 +1,10 @@
+# ----------------------------------------------------------------------------------
+#  THIS SCRIPT CAN BE EXECUTEd TO CREATE DATABASE TABLES AND RELATIONSHIPS: 
+# ----------------------------------------------------------------------------------
 
-#### THIS SCRIPT CAN BE EXECUTEd TO CREATE DATABASE TABLES AND RELATIONSHIPS ####
-
-from sqlalchemy import Column, Integer, String, ForeignKey, DateTime, Boolean, Enum, Float, UniqueConstraint
+from sqlalchemy import Column, Integer, String, ForeignKey, DateTime, Boolean, Float, UniqueConstraint
 from sqlalchemy.orm import relationship
 from datetime import datetime
-from sqlalchemy.types import Enum
 from os import getenv
 from passlib.context import CryptContext
 import uuid
@@ -16,16 +16,25 @@ class User(Base):
     __tablename__ = 'users'
     user_id = Column(String, primary_key=True, unique=True)
     name = Column(String, nullable=False)
-    email = Column(String, unique=True, nullable=False)
+    email = Column(String(40), unique=True, nullable=False)
     password_hash = Column(String, nullable=False)
     creation_date = Column(DateTime,default=datetime.now,onupdate=datetime.now)
-    role = Column(String, ForeignKey('user_roles_lookup.user_role'))
+    role = Column(String(11), ForeignKey('user_roles_lookup.user_role'))
     confirmation_code = Column(Integer, nullable=False, default=0)
+    attempts_canching_password = Column(Integer, nullable=False, default=0)
     
     ingredients = relationship('Ingredient', back_populates='user')
     recipes = relationship('Recipe', back_populates='user')
     user_roles_lookup = relationship('UserRolesLookup', back_populates='user')
     shared_recipes = relationship('SharedRecipe', back_populates='from_user', foreign_keys='SharedRecipe.from_user_id')
+
+class ResetPasswordToken(Base):
+    __tablename__ = 'reset_password_tokens'
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    user_id = Column(String)
+    token = Column(String(255))
+    created_at = Column(DateTime)
+    expires_at = Column(DateTime)
 
 class Recipe(Base):
     __tablename__ = 'recipes'
@@ -33,10 +42,12 @@ class Recipe(Base):
     user_id = Column(String, ForeignKey('users.user_id'))
     recipe_name = Column(String, nullable=False, default='Recipe')
     weight_per_unit = Column(Integer, default=0)
+    Unit_of_meassure = Column(String, ForeignKey('units_of_meassure_lookup.unit_of_meassure'))
     category = Column(String, nullable=False, default='All Recipes')
+
     user = relationship('User', back_populates='recipes')
     ingredients = relationship('IngredientRecipe', back_populates='recipe')
-
+    units_of_meassure_lookup = relationship('UnitOfMeassureLookup', back_populates='recipe')
 class Ingredient(Base):
     __tablename__ = 'ingredients'
     ingredient_id = Column(String, primary_key=True, unique=True)
@@ -54,16 +65,21 @@ class Ingredient(Base):
     units_of_meassure_lookup = relationship('UnitOfMeassureLookup', back_populates='ingredient')
     __table_args__ = (UniqueConstraint('user_id', 'ingredient_name', name='uq_user_ingredient_name'),)
 
+# ----------------------------------------------------------------------------------
+#                                    PIVOT TABLES 
+# ----------------------------------------------------------------------------------
+    
 class IngredientRecipe(Base):
     __tablename__ = 'ingredients_recipes'
     ingredient_recipe_id = Column(Integer, primary_key=True)
     recipe_id = Column(Integer, ForeignKey('recipes.recipe_id'))
     ingredient_id = Column(String, ForeignKey('ingredients.ingredient_id'))
     weight = Column(Integer, nullable=False)
-    unit_of_meassure = Column(Enum(Unit_of_meassure), nullable=False)
+    unit_of_meassure = Column(String, ForeignKey("units_of_meassure_lookup.unit_of_meassure"))
 
     recipe = relationship('Recipe', back_populates='ingredients')
     ingredient = relationship('Ingredient', back_populates='recipes')
+    units_of_meassure_lookup = relationship('UnitOfMeassureLookup', back_populates='ingredient_recipe')
 
 class SharedRecipe(Base):
     __tablename__ = 'shared_recipes'
@@ -76,14 +92,18 @@ class SharedRecipe(Base):
     to_user = relationship('User', back_populates='shared_recipes', foreign_keys='SharedRecipe.to_user_id')
     recipe = relationship('Recipe')
 
-#### Lookup Tables ####
 
+# ----------------------------------------------------------------------------------
+#                                   LOOKUP TABLES 
+# ----------------------------------------------------------------------------------
 class UnitOfMeassureLookup(Base):
     __tablename__ = 'units_of_meassure_lookup'
     id = Column(Integer, primary_key=True, autoincrement=True, unique=True)
     unit_of_meassure  = Column(String, unique=True)
 
     ingredient = relationship('Ingredient', back_populates='units_of_meassure_lookup')
+    recipe = relationship('Recipe', back_populates='units_of_meassure_lookup')
+    ingredient_recipe = relationship('IngredientRecipe', back_populates='units_of_meassure_lookup')
 
 class UserRolesLookup(Base):
     __tablename__ = 'user_roles_lookup'
@@ -97,7 +117,9 @@ if __name__ == "__main__":
     Base.metadata.create_all(engine)
     print("Migrations to database executed correctly.")
 
-#### INSERTION OF ENUMS DATA INTO LOOKUP TABLES:
+# ----------------------------------------------------------------------------------
+#                      INSERTION OF ENUMS DATA INTO LOOKUP TABLES: 
+# ----------------------------------------------------------------------------------
 
     for unit in Unit_of_meassure:
         new_unit = UnitOfMeassureLookup(unit_of_meassure=unit.value)
@@ -107,7 +129,10 @@ if __name__ == "__main__":
         new_role = UserRolesLookup(user_role=role.name)
         session.add(new_role)
 
-####  INSERTION OF ADMIN USER DATA INTO USERS TABLE:
+# ----------------------------------------------------------------------------------
+#                       INSERTION OF ADMIN USER DATA INTO USERS TABLE: 
+# ----------------------------------------------------------------------------------
+        
     bcrypt_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
     name = getenv("NAME")

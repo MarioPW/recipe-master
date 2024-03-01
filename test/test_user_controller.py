@@ -93,6 +93,7 @@ def test_get_all_users(mocker, user, unconfirmed_user, token, mock_roles_require
     mock_roles_required.assert_called_once_with([UserRole.admin], token)
     assert result == [user, unconfirmed_user]
 
+
 @pytest.mark.anyio
 def test_get_all_users_role_fail(mocker, token, mock_roles_required):
     mock_service_get_all_users = mocker.patch('src.api.components.users.controller.user_service.get_all_users')
@@ -120,7 +121,6 @@ def test_get_all_users_fail(mocker, token, mock_roles_required):
 
     mock_service_get_all_users.assert_called_once()
     mock_roles_required.assert_called_once_with([UserRole.admin], token)
-
 
 @pytest.mark.anyio
 def test_get_user_by_id(mocker, token, user,mock_roles_required):
@@ -190,10 +190,10 @@ def test_get_user_by_email_fail(mocker, token, user_email, mock_roles_required):
 
 @pytest.mark.anyio
 def test_create_register_submition(mocker, user_register):
-    mock_service_create_register_submition = mocker.patch('src.api.components.users.controller.user_service.create_register_submition', return_value = "Verification email sended to guido@gmail.com")
+    mock_service_create_register_submition = mocker.patch('src.api.components.users.controller.user_service.create_register_submition', return_value = "Verification email sent to guido@gmail.com")
     result = controller.create_register_submition(user_register)
     assert mock_service_create_register_submition.called_once
-    assert result == "Verification email sended to guido@gmail.com"
+    assert result == "Verification email sent to guido@gmail.com"
 
 @pytest.mark.anyio
 def test_create_register_submition_email_exists(mocker, user_register, user):

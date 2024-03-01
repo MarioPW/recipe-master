@@ -1,10 +1,10 @@
 # Business Logic
 
-* User SignIn-Login with user roles sistem. ✓
+* User SignUp-Login with user roles sistem. ✓
 * The users can create, read, update, or delete their recipes (CRUD).
-* The users can create, read, update, or delete their ingredients (CRUD).
-* The user can access a list of all the ingredients in their recipes.
-* The user can assign cost to each of their ingredients in diferent weight or volume units.
+* The users can create, read, update, or delete their ingredients (CRUD). ✓
+* The user can access a list of all the ingredients in their recipes. ✓
+* The user can assign cost to each of their ingredients in diferent weight or volume units. ✓
 * The user can save a list of products with their weight per unit.
 * The user can maintain a daily production and reduction record for each product.
 * The app can calculate:
@@ -14,8 +14,8 @@
         | ***Example:*** | $ |
         |-------------------------------------------|-----|
         | Product cost:                             | $12 |
-        | Percentage of cost in the final price     | 30% |
-        | Final price per unit (100 * 12) / 30 =    | $40 | 
+        | Percentage of cost in the final price     | %30 |
+        | Final price per unit (100 * 12) / 30  =   | $40 | 
     * Recipe for a specific number of units.
     * Ingredient requisition based on quantities of units for each product.
     * Cost of requisitions.
@@ -85,13 +85,13 @@ Create a .env file to store the configuration of your database, JWT, email, and 
 
   # JSON web token credentials
 
-  JWT_SECRET_KEY = "Secret key for decrypting youre JWT's"
+  JWT_SECRET_KEY = "Secret key for decrypting your JWT's"
   ALGORITHM = "HS256"
   ACCESS_TOKEN_EXPIRE_MIN=30 "Duration in minutes that you want the session to last."
 
   # This email account will be used to send email notifications, verification signup codes, and newsletters to the users.
 
-  EMAIL="example@gmail.com" *Youre enterprise email*
+  EMAIL="example@gmail.com" *Your enterprise email*
   EMAIL_PASSWORD="examplepassword" *This password must be a SMPT password.*
   CHANGE_PASSWORD_ENDPIONT=""
 
@@ -135,6 +135,11 @@ C:\path\to\python.exe models.py
 ```
 *This process assumes you already have Python installed and configured on your system. If not, you will need to install Python before running this migration script. Also, make sure all project dependencies are installed before executing the migration script.*
 
+# Database Diagram:
+![alt text](src\utils\static_files\image.png)
+
+*created with:* https://www.eraser.io/
+
 # Testing with pytest:
 
 We utilize the pytest library for testing our application.
@@ -161,3 +166,7 @@ Running the tests for this application:
     ```bash
     pytest -v -l
     ```
+
+    harina: 200 g
+    mantequilla: 200 gr
+    azucar: 200 grms

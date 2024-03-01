@@ -1,11 +1,12 @@
 from fastapi import HTTPException
 from fastapi.responses import JSONResponse
-from .schemas import UserUpdateReq, UserRegister
-from src.db.models import User, UserRole
+from .schemas import UserUpdateReq, UserRegister, ResetPasswordReq
+from src.db.models import User, UserRole, ResetPasswordToken
 from .repository import UserRepository
 from pydantic import EmailStr
 from src.db.database import session
 import uuid
+from datetime import datetime, timedelta
 from src.utils.email_handler import EmailHandler
 from src.utils.password_hash import get_password_hash, verify_password
 from src.utils.jwt_handler import create_access_token
@@ -47,7 +48,7 @@ class UserService(UserRepository):
             raise HTTPException(status_code=400, detail=f"Error creating register submition in service: {e}")
         success = self.user_repository.create_user(user)
         if success:
-            return JSONResponse(status_code=200, content=f"Verification email sended to {data.email}")
+            return JSONResponse(status_code=200, content=f"Verification email sent to {data.email}")
         
     def login(self, user_data):          
         user_db = self.user_repository.get_user_by_email(user_data.username)
@@ -70,15 +71,41 @@ class UserService(UserRepository):
             raise HTTPException(status_code=400, detail=f"Error creating user token: {e}")
         
     def forgot_password(self, email):
-        user = self.user_repository.get_user_by_email(email)
-        if type(user) != User:
+        user_exist = self.user_repository.get_user_by_email(email)
+        if not user_exist:
             raise HTTPException(status_code=404, detail=f'User "{email}" not found')
-        email_handler = EmailHandler(user.email)
-        try:
-            email_handler.send_change_password_email()
-            return JSONResponse(status_code=200, content={"message": f'Email to {email} sended successfully.'})
+        
+        update_attempts_canching_password = {"attempts_canching_password": user_exist.attempts_canching_password + 1}
+        self.user_repository.update_user(user_exist.user_id, update_attempts_canching_password)
+
+        email_handler = EmailHandler(email)
+        email_handler.send_change_password_email()
+        reset_password_code = email_handler.get_reset_password_code()
+
+        try: 
+            reset_password_token = ResetPasswordToken(
+                user_id = user_exist.user_id,
+                token = reset_password_code,
+                created_at = datetime.utcnow(),
+                expires_at = datetime.utcnow() + timedelta(minutes=10),
+            )
         except Exception as e:
-            raise HTTPException(status_code=503, content={"message": f'Service Unavailable: {e}'})
+            raise HTTPException(status_code=400, detail=f"Couldn't create reset_passwor_token in /users/service: {e}")
+
+        self.user_repository.save_reset_password_token(reset_password_token)
+        return JSONResponse(status_code=200, content={"message": f'Email to "{email}" sent successfully.'})
+        
+    def reset_password(self, reset_password_req: ResetPasswordReq):
+        token_exist: ResetPasswordToken = self.user_repository.get_reset_password_token(reset_password_req.token)
+        if not token_exist:
+            raise HTTPException(status_code=404, detail=f'Ghange password token for "{reset_password_req.email}" not found')
+        elif token_exist.expires_at < datetime.utcnow():
+            raise HTTPException(status_code=404, detail=f'Token has expired')
+        
+        password_update = {
+            "password_hash": get_password_hash(reset_password_req.password1)
+        }
+        return self.user_repository.update_user(token_exist.user_id, password_update)           
 
     def get_user_by_id(self, user_id: str):
         return self.user_repository.get_user_by_id(user_id)
@@ -99,8 +126,7 @@ class UserService(UserRepository):
                 }
         except Exception as e:
             raise HTTPException(status_code=400, detail=f"Something went wrong updating user in service: {e}")
-        return self.user_repository.update_user(user.user_id, updated_user)              
+        return self.user_repository.update_user(user.user_id, updated_user)           
 
     def delete_user(self, user_id: str):
         return self.user_repository.delete_user(user_id)
-    
