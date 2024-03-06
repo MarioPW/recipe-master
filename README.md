@@ -136,7 +136,7 @@ C:\path\to\python.exe models.py
 *This process assumes you already have Python installed and configured on your system. If not, you will need to install Python before running this migration script. Also, make sure all project dependencies are installed before executing the migration script.*
 
 # Database Diagram:
-![alt text](src\utils\static_files\image.png)
+![alt text](src/utils/static_files/image.png)
 
 *created with:* https://www.eraser.io/
 
