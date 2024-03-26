@@ -31,9 +31,8 @@ def roles_required_returninig_user_data(allowed_roles:list, token=None, code=Non
     if user is None or user.role not in allowed_roles:
         raise HTTPException(status_code=403, detail="Access denied")
     return user
-    
 
 def role_admin_middleware(token: str = Depends(oauth2_scheme)):
-    has_required_role = roles_required([UserRole.user], token)
+    has_required_role = roles_required([UserRole.admin], token)
     if not has_required_role:
         raise HTTPException(status_code=403, detail="Access denied")

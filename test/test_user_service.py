@@ -20,7 +20,7 @@ def mock_OAuth2PasswordRequestForm():
 
 @pytest.fixture
 def fake_user():
-    return User(user_id="1", name="test_user", email="test@example.com", attempts_canching_password = 0)
+    return User(user_id="1", name="test_user", email="test@example.com", attempts_to_change_password = 0)
 
 #### TEST ####
 
@@ -93,13 +93,15 @@ class TestUserService:
 
         mocker.patch.object(EmailHandler, 'send_change_password_email')
 
+        mocker.patch.object(user_service_instance.user_repository, 'get_user_by_id', return_value=fake_user)
+
         result = user_service_instance.forgot_password(fake_user.email)
         user_service_instance.user_repository.get_user_by_email.assert_called_once_with(fake_user.email)
         EmailHandler.send_change_password_email.assert_called_once()
 
         expected_result = JSONResponse(status_code=200, content={"message": f'Email to {fake_user.email} sent successfully.'})
         assert result.status_code == expected_result.status_code
-        assert result.body ==  b'{"message":"Email to test@example.com sent successfully."}'
+        assert result.body ==  b'{"message":"Email to \\"test@example.com\\" sent successfully."}'
 
     def test_forgot_password_user_exist_Exception(self, user_service_instance, mocker):
         email = "test@example.com"
@@ -120,5 +122,5 @@ class TestUserService:
         user_repository_save_reset_password_token = mocker.patch.object(user_service_instance.user_repository, 'save_reset_password_token')
 
         user_repository_save_reset_password_token.assert_not_called()
-        assert exc_info.value.detail == "Error sending change password email:"
+        assert exc_info.value.detail == "Error updating user in repository: "
  

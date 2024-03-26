@@ -80,7 +80,7 @@ Create a .env file to store the configuration of your database, JWT, email, and 
   ```bash
   # In this example PostgreSQL is used:
 
-  DB_URL = "postgresql://your_username:your_secret_password@localhost/your_database_name"
+  DB_URL = "postgresql://your_postgres_username:your_postgres_password@localhost/your_database_name"
   'Make sure to replace your_username, your_secret_password, your_database_name, and other values with your specific configuration.'
 
   # JSON web token credentials
@@ -102,6 +102,12 @@ Create a .env file to store the configuration of your database, JWT, email, and 
   NAME="admin user name"
   ADMIN_EMAIL="admin user email"
   PASSWORD="admin user password"
+
+  # Allowed Origins
+
+  
+
+  ALLOWED_ORIGINS="http://127.0.0.1:5173/,http://localhost:8080,www.recipemaster.com"
 
   ```
   4. Save the .env file.
@@ -166,7 +172,3 @@ Running the tests for this application:
     ```bash
     pytest -v -l
     ```
-
-    harina: 200 g
-    mantequilla: 200 gr
-    azucar: 200 grms

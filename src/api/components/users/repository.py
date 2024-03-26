@@ -49,7 +49,10 @@ class UserRepository:
             self.sess.query(User).filter(User.user_id == id).update(data)
             self.sess.commit()
             updated_user: User = self.get_user_by_id(id) 
-            return JSONResponse(status_code=200, content={"message": f"User {updated_user.name} updated successfully."})
+            if updated_user:
+                return JSONResponse(status_code=200, content={"message": f"User {updated_user.name} updated successfully."})
+            else:
+                raise HTTPException(status_code=404, detail=f"User with id {id} not found.")
         except Exception as e:
             raise HTTPException(status_code=500, detail=f"Error updating user in repository: {e}")
     

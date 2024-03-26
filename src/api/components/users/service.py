@@ -75,8 +75,8 @@ class UserService(UserRepository):
         if not user_exist:
             raise HTTPException(status_code=404, detail=f'User "{email}" not found')
         
-        update_attempts_canching_password = {"attempts_canching_password": user_exist.attempts_canching_password + 1}
-        self.user_repository.update_user(user_exist.user_id, update_attempts_canching_password)
+        update_attempts_to_change_password = {"attempts_to_change_password": user_exist.attempts_to_change_password + 1}
+        self.user_repository.update_user(user_exist.user_id, update_attempts_to_change_password)
 
         email_handler = EmailHandler(email)
         email_handler.send_change_password_email()
@@ -86,8 +86,8 @@ class UserService(UserRepository):
             reset_password_token = ResetPasswordToken(
                 user_id = user_exist.user_id,
                 token = reset_password_code,
-                created_at = datetime.utcnow(),
-                expires_at = datetime.utcnow() + timedelta(minutes=10),
+                created_at = datetime.now(),
+                expires_at = datetime.now() + timedelta(minutes=10),
             )
         except Exception as e:
             raise HTTPException(status_code=400, detail=f"Couldn't create reset_passwor_token in /users/service: {e}")
@@ -99,7 +99,7 @@ class UserService(UserRepository):
         token_exist: ResetPasswordToken = self.user_repository.get_reset_password_token(reset_password_req.token)
         if not token_exist:
             raise HTTPException(status_code=404, detail=f'Ghange password token for "{reset_password_req.email}" not found')
-        elif token_exist.expires_at < datetime.utcnow():
+        elif token_exist.expires_at < datetime.now():
             raise HTTPException(status_code=404, detail=f'Token has expired')
         
         password_update = {

@@ -3,18 +3,19 @@ from src.api.routes import router
 from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
+from dotenv import load_dotenv
+from os import getenv
+
+load_dotenv()
 
 app = FastAPI()
 
 app.include_router(router, prefix="/api/v1")    
 app.mount("/static", StaticFiles(directory="./src/utils/static_files"), name="main")
 
-origins = [
-    "http://127.0.0.1:5173/",
-    "https://localhost.mario.com",
-    "http://localhost",
-    "http://localhost:8080",
-]
+origins = getenv("ALLOWED_ORIGINS").split(',')
+
+print(origins, "TIPO", type(origins))
 
 app.add_middleware(
     CORSMiddleware,

@@ -1,5 +1,5 @@
 # ----------------------------------------------------------------------------------
-#  THIS SCRIPT CAN BE EXECUTEd TO CREATE DATABASE TABLES AND RELATIONSHIPS: 
+#  THIS SCRIPT CAN BE EXECUTED TO MAKE THE MIGRATIONS TO THE DATABASE: 
 # ----------------------------------------------------------------------------------
 
 from sqlalchemy import Column, Integer, String, ForeignKey, DateTime, Boolean, Float, UniqueConstraint
@@ -21,7 +21,7 @@ class User(Base):
     creation_date = Column(DateTime,default=datetime.now,onupdate=datetime.now)
     role = Column(String(11), ForeignKey('user_roles_lookup.user_role'))
     confirmation_code = Column(Integer, nullable=False, default=0)
-    attempts_canching_password = Column(Integer, nullable=False, default=0)
+    attempts_to_change_password = Column(Integer, nullable=False, default=0)
     
     ingredients = relationship('Ingredient', back_populates='user')
     recipes = relationship('Recipe', back_populates='user')
