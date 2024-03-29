@@ -30,12 +30,12 @@ def get_ingredient_by_id(id: str, _user = Depends(only_ADMIN_or_USER_role)):
     return ingredient_service.get_ingredient_by_id(id)
  
 @ingredients_router.post("/")
-def create_ingredient(ingredient_req : IngredientReq, user = Depends(only_ADMIN_or_USER_role)):  
+def create_ingredient(ingredient_req: IngredientReq, user = Depends(only_ADMIN_or_USER_role)):
     return ingredient_service.create_ingredient(ingredient_req, user.user_id)
 
 @ingredients_router.put("/{data}")
-def update_ingredient(updates: IngredientUpdateReq, ingredient_id, user = Depends(only_ADMIN_or_USER_role)):
-    return ingredient_service.update_ingredient(updates, ingredient_id, user.user_id)
+def update_ingredient(updates: IngredientUpdateReq, ingredient_id, _user = Depends(only_ADMIN_or_USER_role)):
+    return ingredient_service.update_ingredient(updates, ingredient_id)
 
 @ingredients_router.delete("/{id}")
 def delete_ingredient(id: str, token: str = Depends(oauth2_scheme)):

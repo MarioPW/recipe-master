@@ -28,39 +28,23 @@ class IngredientsRepository:
         try:
             self.sess.add(new_ingredient)
             self.sess.commit()           
-            return {"message": f'Ingredient " {new_ingredient.ingredient_name} " created siccessfully'}
+            return {"message": f"Ingredient '{new_ingredient.ingredient_name}' created successfully"}
         except Exception as err:
             self.sess.rollback()
             raise HTTPException(status_code=500, detail=f'Could not create ingredient "{new_ingredient.ingredient_name}": {err}')
     
-    # def update_ingredient(self, id:str, updates, user_id: str):
-    #     to_update = self.sess.query(Ingredient).filter(Ingredient.ingredient_id == id)
-    #     if not to_update:
-    #         raise HTTPException(status_code=404, detail=f"Ingredient not found")
-    #     try:
-    #         self.sess.update(to_update)
-    #         self.sess.commit()
-    #         return JSONResponse(status_code=200, content=f"Ingredient updated successfully")
-    #     except Exception as e:
-    #         raise HTTPException(status_code=500, detail=f"Couldn't update ingredient: {e}")
-
-    def update_ingredient(self, updates: Dict):
+    def update_ingredient(self, id:str, updates):
         print(updates)
-        # try:
-        #     ingredient = self.sess.query(Ingredient).filter(
-        #         Ingredient.ingredient_id == updates["ingredient_id"]
-        #     )
-        #     if not ingredient:
-        #         raise HTTPException(status_code=404, detail="Ingredient not found or does not belong to the user")
+        to_update = self.sess.query(Ingredient).filter(Ingredient.ingredient_id == id).first()
+        if not to_update:
+            raise HTTPException(status_code=404, detail=f"Ingredient not found in repository")
+        try:
+            self.sess.query(Ingredient).filter(Ingredient.ingredient_id == id).update(updates)
+            self.sess.commit()
+        except Exception as e:
+            raise HTTPException(status_code=500, detail=f"Couldn't update ingredient: {e}")
+        return JSONResponse(status_code=200, content=f"Ingredient {updates['ingredient_name']} updated successfully")
 
-        #     for key, value in updates.items():
-        #         setattr(ingredient, key, value)
-        #     self.sess.update(ingredient)
-        #     self.sess.commit()
-        #     return JSONResponse(status_code=200, content=f"Ingredient {ingredient.ingredient_name} updated successfully")
-        # except Exception as e:
-        #     raise HTTPException(status_code=500, detail=f"Couldn't update ingredient in repository: {e}")
-        
     def delete_ingredient(self, id):
         to_delete = self.sess.query(Ingredient).filter(Ingredient.ingredient_id==id).first()
         if not to_delete:

@@ -98,7 +98,7 @@ class UserService(UserRepository):
     def reset_password(self, reset_password_req: ResetPasswordReq):
         token_exist: ResetPasswordToken = self.user_repository.get_reset_password_token(reset_password_req.token)
         if not token_exist:
-            raise HTTPException(status_code=404, detail=f'Ghange password token for "{reset_password_req.email}" not found')
+            raise HTTPException(status_code=404, detail=f'Change password token for "{reset_password_req.email}" not found')
         elif token_exist.expires_at < datetime.now():
             raise HTTPException(status_code=404, detail=f'Token has expired')
         

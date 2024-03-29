@@ -15,8 +15,6 @@ app.mount("/static", StaticFiles(directory="./src/utils/static_files"), name="ma
 
 origins = getenv("ALLOWED_ORIGINS").split(',')
 
-print(origins, "TIPO", type(origins))
-
 app.add_middleware(
     CORSMiddleware,
     allow_origins=origins,

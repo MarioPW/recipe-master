@@ -7,7 +7,7 @@ class UserRole(str, pyEnum):
     guest = "guest"
     unconfirmed = "unconfirmed"
 
-class Unit_of_meassure(pyEnum):
+class Unit_of_measure(pyEnum):
     KILOGRAM = "Kg"
     GRAM = "g"
     POUND = "lb"

@@ -10,7 +10,7 @@ from passlib.context import CryptContext
 import uuid
 
 from src.db.database import Base, engine, session
-from src.db.enums import UserRole, Unit_of_meassure
+from src.db.enums import UserRole, Unit_of_measure
 
 class User(Base):
     __tablename__ = 'users'
@@ -42,7 +42,7 @@ class Recipe(Base):
     user_id = Column(String, ForeignKey('users.user_id'))
     recipe_name = Column(String, nullable=False, default='Recipe')
     weight_per_unit = Column(Integer, default=0)
-    Unit_of_meassure = Column(String, ForeignKey('units_of_meassure_lookup.unit_of_meassure'))
+    Unit_of_measure = Column(String, ForeignKey('units_of_meassure_lookup.unit_of_measure'))
     category = Column(String, nullable=False, default='All Recipes')
 
     user = relationship('User', back_populates='recipes')
@@ -54,7 +54,7 @@ class Ingredient(Base):
     user_id = Column(String, ForeignKey('users.user_id'))
     ingredient_name = Column(String, nullable=False)
     cost = Column(Float, nullable=False, default=0)
-    unit_of_meassure = Column(String, ForeignKey("units_of_meassure_lookup.unit_of_meassure"))
+    unit_of_measure = Column(String, ForeignKey("units_of_meassure_lookup.unit_of_measure"))
     has_gluten = Column(Boolean, nullable=False, default=False)
     is_vegan = Column(Boolean, nullable=False, default=False)
     supplier = Column(String, nullable=False, default="Undefined supplier")
@@ -75,7 +75,7 @@ class IngredientRecipe(Base):
     recipe_id = Column(Integer, ForeignKey('recipes.recipe_id'))
     ingredient_id = Column(String, ForeignKey('ingredients.ingredient_id'))
     weight = Column(Integer, nullable=False)
-    unit_of_meassure = Column(String, ForeignKey("units_of_meassure_lookup.unit_of_meassure"))
+    unit_of_measure = Column(String, ForeignKey("units_of_meassure_lookup.unit_of_measure"))
 
     recipe = relationship('Recipe', back_populates='ingredients')
     ingredient = relationship('Ingredient', back_populates='recipes')
@@ -92,14 +92,13 @@ class SharedRecipe(Base):
     to_user = relationship('User', back_populates='shared_recipes', foreign_keys='SharedRecipe.to_user_id')
     recipe = relationship('Recipe')
 
-
 # ----------------------------------------------------------------------------------
 #                                   LOOKUP TABLES 
 # ----------------------------------------------------------------------------------
 class UnitOfMeassureLookup(Base):
     __tablename__ = 'units_of_meassure_lookup'
     id = Column(Integer, primary_key=True, autoincrement=True, unique=True)
-    unit_of_meassure  = Column(String, unique=True)
+    unit_of_measure  = Column(String, unique=True)
 
     ingredient = relationship('Ingredient', back_populates='units_of_meassure_lookup')
     recipe = relationship('Recipe', back_populates='units_of_meassure_lookup')
@@ -121,8 +120,8 @@ if __name__ == "__main__":
 #                      INSERTION OF ENUMS DATA INTO LOOKUP TABLES: 
 # ----------------------------------------------------------------------------------
 
-    for unit in Unit_of_meassure:
-        new_unit = UnitOfMeassureLookup(unit_of_meassure=unit.value)
+    for unit in Unit_of_measure:
+        new_unit = UnitOfMeassureLookup(unit_of_measure=unit.value)
         session.add(new_unit)
 
     for role in UserRole:

@@ -88,11 +88,8 @@ class TestUserService:
         assert result == expected_result
 
     def test_forgot_password(self, user_service_instance, fake_user, mocker):
-
         mocker.patch.object(user_service_instance.user_repository, 'get_user_by_email', return_value=fake_user)
-
         mocker.patch.object(EmailHandler, 'send_change_password_email')
-
         mocker.patch.object(user_service_instance.user_repository, 'get_user_by_id', return_value=fake_user)
 
         result = user_service_instance.forgot_password(fake_user.email)
