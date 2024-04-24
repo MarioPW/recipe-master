@@ -34,7 +34,6 @@ class IngredientsRepository:
             raise HTTPException(status_code=500, detail=f'Could not create ingredient "{new_ingredient.ingredient_name}": {err}')
     
     def update_ingredient(self, id:str, updates):
-        print(updates)
         to_update = self.sess.query(Ingredient).filter(Ingredient.ingredient_id == id).first()
         if not to_update:
             raise HTTPException(status_code=404, detail=f"Ingredient not found in repository")

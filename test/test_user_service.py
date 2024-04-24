@@ -5,13 +5,15 @@ from fastapi.security import  OAuth2PasswordRequestForm
 
 from src.db.models import UserRole, User
 from src.api.components.users.service import UserService
+from src.api.components.users.repository import UserRepository
 from src.utils.email_handler import EmailHandler
+from src.utils.jwt_handler import TokenHandler
 
 #### MOCKS ####
 
 @pytest.fixture
 def user_service_instance():
-    return UserService()
+    return UserService(UserRepository, EmailHandler, TokenHandler)
 
 @pytest.fixture
 def mock_OAuth2PasswordRequestForm():
@@ -66,7 +68,7 @@ class TestUserService:
         mocker.patch.object(user_service_instance.user_repository, 'get_user_by_email', return_value=user_db)
 
         mock_verify_password = mocker.patch("src.api.components.users.service.verify_password")
-        mock_create_access_token = mocker.patch("src.api.components.users.service.create_access_token")
+        mock_create_access_token = mocker.patch("src.api.components.users.service.TokenHandler.create_access_token")
 
         mock_verify_password.return_value = True
         mock_create_access_token.return_value="fake_access_token"

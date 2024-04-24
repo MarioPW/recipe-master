@@ -6,8 +6,11 @@ from src.db.models import UserRole, User
 from src.api.components.users.schemas import UserRegister
 from src.api.components.users import controller
 from src.api.components.users.service import UserService
+from src.api.components.users.repository import UserRepository
+from src.utils.email_handler import EmailHandler
+from src.utils.jwt_handler import TokenHandler
 
-user_service = UserService()
+user_service = UserService(UserRepository, EmailHandler, TokenHandler)
 
 #### MOCKS ####
 

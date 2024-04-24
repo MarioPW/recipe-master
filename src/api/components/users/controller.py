@@ -6,14 +6,17 @@ from src.api.components.users.service import UserService
 from src.api.components.users.schemas import User, UserRegister, UserUpdateReq, ConfirmationCode, ResetPasswordReq
 from src.middleware.role_auth import roles_required
 from src.middleware.role_dependencies import role_ADMIN, role_ADMIN_UNCONFIRMED, role_ADMIN_UNCONFIRMED, role_ADMIN_USER
-from src.utils.jwt_handler import verify_token
+from src.utils.email_handler import EmailHandler
+from src.utils.jwt_handler import TokenHandler
 from src.db.models import UserRole
+from .repository import UserRepository
+
 
 users_router = APIRouter(
     prefix="/users",
     tags=["Users"])
 
-user_service = UserService()
+user_service = UserService(UserRepository, EmailHandler, TokenHandler)
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/v1/users/login")
 
@@ -56,7 +59,7 @@ def login(data: OAuth2PasswordRequestForm = Depends()):
 @users_router.put("/{updates}")
 def update_user(user_updates: UserUpdateReq, token: str = Depends(oauth2_scheme)):
     roles_required([ADMIN, USER], token)
-    user_id: str = verify_token(token)["user_id"]
+    user_id: str = TokenHandler.verify_token(token)["user_id"]
     return user_service.update_user(user_id, user_updates)
 
 @users_router.delete("/{del_user_id}")

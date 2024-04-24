@@ -9,12 +9,13 @@ import uuid
 from datetime import datetime, timedelta
 from src.utils.email_handler import EmailHandler
 from src.utils.password_hash import get_password_hash, verify_password
-from src.utils.jwt_handler import create_access_token
+from src.utils.jwt_handler import TokenHandler
 
-class UserService(UserRepository):
-
-    def __init__(self):
-        self.user_repository = UserRepository(session)
+class UserService():
+    def __init__(self, user_repository: UserRepository, email_handler: EmailHandler, token_handler: TokenHandler)-> None: 
+        self.user_repository = user_repository(session)
+        self.email_handler = email_handler
+        self.token_handler = token_handler
 
     def get_all_users(self):
         return self.user_repository.get_all_users()
@@ -33,7 +34,7 @@ class UserService(UserRepository):
         return self.user_repository.update_user(unconfirmed_user.user_id, confirmed_user)
     
     def create_register_submition(self, data: UserRegister):                
-        email_handler = EmailHandler(data.email)
+        email_handler = self.email_handler(data.email)
         email_handler.send_verification_email()
         try:
             user = User( 
@@ -64,7 +65,7 @@ class UserService(UserRepository):
                 "role": user_db.role
                 }
             return {
-                    "access_token": create_access_token(user_data_token),
+                    "access_token": self.token_handler.create_access_token(user_data_token),
                     "token_type": "bearer"
                 }
         except Exception as e:

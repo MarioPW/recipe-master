@@ -17,21 +17,21 @@ pwd_context=CryptContext(schemes=["bcrypt"],deprecated="auto")
 # save token to oauth2_scheme
 oauth2_scheme=OAuth2PasswordBearer(tokenUrl="user/signin")
 
-# create Token
-def create_access_token(data: dict):   
-    expiration = datetime.utcnow() + timedelta(minutes=TOKEN_EXPIRE)
-    expiration_str = expiration.isoformat()
-    data["expire"] = expiration_str   
-    token = jwt.encode(claims=data, key=JWT_SECRET_KEY, algorithm=ALGORITHM)
-    return token
-    
-def verify_token(token) -> dict:
-    try:
-        payload = jwt.decode(token,key=JWT_SECRET_KEY)
-        return payload
-    except JWTError as ex:
-        print(str(ex))
-        raise HTTPException(status_code=401, detail="Invalid Token", headers={"WWW-Authenticate":"Bearer"})
+class TokenHandler:
+    def create_access_token(data: dict):   
+        expiration = datetime.utcnow() + timedelta(minutes=TOKEN_EXPIRE)
+        expiration_str = expiration.isoformat()
+        data["expire"] = expiration_str   
+        token = jwt.encode(claims=data, key=JWT_SECRET_KEY, algorithm=ALGORITHM)
+        return token
+        
+    def verify_token(token) -> dict:
+        try:
+            payload = jwt.decode(token,key=JWT_SECRET_KEY)
+            return payload
+        except JWTError as ex:
+            print(str(ex))
+            raise HTTPException(status_code=401, detail="Invalid Token", headers={"WWW-Authenticate":"Bearer"})
 
 # Just to try out
 if __name__ == "__main__":

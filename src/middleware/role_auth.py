@@ -1,6 +1,6 @@
 from fastapi import Depends, HTTPException
 from fastapi.security import OAuth2PasswordBearer
-from src.utils.jwt_handler import verify_token
+from src.utils.jwt_handler import TokenHandler
 from src.db.models import UserRole
 from src.api.components.users.repository import UserRepository
 from src.api.components.users.service import session
@@ -12,7 +12,7 @@ user_repository = UserRepository(session)
 def roles_required(allowed_roles:list, token=None, code=None) -> None:
     user = None
     if token:
-        decoded_user = verify_token(token)
+        decoded_user = TokenHandler.verify_token(token)
         if decoded_user:
             user = user_repository.get_user_by_id(decoded_user["user_id"])
     elif code:
@@ -23,7 +23,7 @@ def roles_required(allowed_roles:list, token=None, code=None) -> None:
 def roles_required_returninig_user_data(allowed_roles:list, token=None, code=None):
     user = None
     if token:
-        decoded_user = verify_token(token)
+        decoded_user = TokenHandler.verify_token(token)
         if decoded_user:
                user = user_repository.get_user_by_id(decoded_user["user_id"])
     elif code:
