@@ -33,12 +33,12 @@ class IngredientsRepository:
             self.sess.rollback()
             raise HTTPException(status_code=500, detail=f'Could not create ingredient "{new_ingredient.ingredient_name}": {err}')
     
-    def update_ingredient(self, id:str, updates):
-        to_update = self.sess.query(Ingredient).filter(Ingredient.ingredient_id == id).first()
+    def update_ingredient(self, updates):
+        to_update = self.sess.query(Ingredient).filter(Ingredient.ingredient_id == updates["ingredient_id"]).first()
         if not to_update:
             raise HTTPException(status_code=404, detail=f"Ingredient not found in repository")
         try:
-            self.sess.query(Ingredient).filter(Ingredient.ingredient_id == id).update(updates)
+            self.sess.query(Ingredient).filter(Ingredient.ingredient_id == updates["ingredient_id"]).update(updates)
             self.sess.commit()
         except Exception as e:
             raise HTTPException(status_code=500, detail=f"Couldn't update ingredient: {e}")

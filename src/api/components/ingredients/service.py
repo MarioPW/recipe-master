@@ -41,13 +41,12 @@ class IngredientsService(IngredientsRepository, UserRepository):
             raise HTTPException(status_code=400, detail=f"Error creating ingerdient in .../ingredients/service: {e}")
         return self.ingredients_repository.create_ingredient(new_ingredient)
         
-    def update_ingredient(self, updates: IngredientUpdateReq, id):
-        ingredient = self.ingredients_repository.get_ingredient_by_id(id)
+    def update_ingredient(self, updates: IngredientUpdateReq):
+        ingredient = self.ingredients_repository.get_ingredient_by_id(updates.ingredient_id)
         if not ingredient:
             raise HTTPException(status_code=404, detail="Ingredient not found in service")  
         updates_dict = updates.model_dump()
-
-        return self.ingredients_repository.update_ingredient(id, updates_dict)
+        return self.ingredients_repository.update_ingredient(updates_dict)
 
     def delete_ingredient(self, ingredient_id):
         try:

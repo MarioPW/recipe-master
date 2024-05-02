@@ -29,6 +29,7 @@ class IngredientReq(BaseModel):
             return self
 
 class IngredientUpdateReq(BaseModel):
+    ingredient_id: str
     ingredient_name: str
     cost: float
     unit_of_measure: Unit_of_measure

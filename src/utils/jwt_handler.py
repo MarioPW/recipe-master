@@ -40,7 +40,7 @@ if __name__ == "__main__":
         "role": "user",
         "expire": "20024/02/06/12/14/21"
         }
-    token = create_access_token(user)
-    decoded = verify_token(token)
+    token = TokenHandler.create_access_token(user)
+    decoded = TokenHandler.verify_token(token)
     print(token)
     print(decoded)
