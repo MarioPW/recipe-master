@@ -15,6 +15,5 @@ try:
     session = Session()
 except Exception as e:
     print(f'Error in database connection: {e}')
-finally:
-    session.close()
+
 
