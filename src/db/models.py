@@ -9,8 +9,8 @@ from os import getenv
 from passlib.context import CryptContext
 import uuid
 
-from .database import Base, engine, session
-from .enums import UserRole, Unit_of_measure
+from src.db.database import Base, engine, session
+from src.db.enums import UserRole, Unit_of_measure
 
 class User(Base):
     __tablename__ = 'users'
