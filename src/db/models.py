@@ -24,13 +24,13 @@ from os import getenv
 
 DATABASE_URL = getenv("DB_URL")
 
-try:
-    engine = create_engine(DATABASE_URL)
-    Base = declarative_base()
-    Session = sessionmaker(autocommit=False, autoflush=False, bind=engine)
-    session = Session()
-except Exception as e:
-    print(f'Error in database connection: {e}')
+# try:
+engine = create_engine(DATABASE_URL)
+Base = declarative_base()
+Session = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+session = Session()
+# except Exception as e:
+    # print(f'Error in database connection: {e}')
 
 
 class UserRole(str, pyEnum):
