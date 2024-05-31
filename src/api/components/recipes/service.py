@@ -1,5 +1,5 @@
 from src.api.components.recipes.repository import RecipeRepository
-from src.db.database import session
+from src.db.models import session
 
 
 class RecipeService(RecipeRepository):

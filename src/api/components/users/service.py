@@ -4,7 +4,7 @@ from .schemas import UserUpdateReq, UserRegister, ResetPasswordReq
 from src.db.models import User, UserRole, ResetPasswordToken
 from .repository import UserRepository
 from pydantic import EmailStr
-from src.db.database import session
+from src.db.models import session
 import uuid
 from datetime import datetime, timedelta
 from src.utils.email_handler import EmailHandler

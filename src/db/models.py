@@ -8,9 +8,48 @@ from datetime import datetime
 from os import getenv
 from passlib.context import CryptContext
 import uuid
+from enum import Enum as pyEnum
 
-from src.db.database import Base, engine, session
-from src.db.enums import UserRole, Unit_of_measure
+# from src.db.database import Base, engine, session
+# from src.db.enums import UserRole, Unit_of_measure
+
+
+from sqlalchemy import create_engine
+from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import Session, sessionmaker, declarative_base 
+# from dotenv import load_dotenv
+from os import getenv
+
+# load_dotenv()
+
+DATABASE_URL = getenv("DB_URL")
+
+try:
+    engine = create_engine(DATABASE_URL)
+    Base = declarative_base()
+    Session = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+    session = Session()
+except Exception as e:
+    print(f'Error in database connection: {e}')
+
+
+class UserRole(str, pyEnum):
+    user = "user"
+    admin = "admin"
+    deleted = "deleted"
+    guest = "guest"
+    unconfirmed = "unconfirmed"
+
+class Unit_of_measure(pyEnum):
+    KILOGRAM = "Kg"
+    GRAM = "g"
+    POUND = "lb"
+    OUNCE = "oz"
+    LITER = "L"
+    MILLILITER = "mL"
+    GALLON = "gal"
+    FLUID_OUNCE = "fl_oz"
+
 
 class User(Base):
     __tablename__ = 'users'

@@ -2,7 +2,7 @@ from fastapi import HTTPException
 from fastapi.responses import JSONResponse
 import uuid
 import json
-from src.db.database import session
+from src.db.models import session
 from src.db.models import User
 from src.api.components.users.repository import UserRepository
 from src.db.models import Ingredient
